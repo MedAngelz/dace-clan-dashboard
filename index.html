@@ -206,53 +206,62 @@
     return cleanNumber(value).toLocaleString();
   }
 
-  function parseCSV(text) {
-    return text
-      .trim()
-      .split("\n")
-      .map(row =>
-        row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-          .map(cell => cell.replace(/^"|"$/g, "").trim())
-      );
+  function escapeHTML(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
-  async function loadData() {
-    try {
-      const response = await fetch(sheetUrl);
-      const csvText = await response.text();
-      const rows = parseCSV(csvText);
+  function showError(message) {
+    document.getElementById("leaderboard").innerHTML = `
+      <tr>
+        <td colspan="9" class="error">${escapeHTML(message)}</td>
+      </tr>
+    `;
+  }
 
-      const data = rows.slice(1)
-        .filter(row => row[0])
-        .map(row => ({
-          Username: row[0],
-          Role: row[1],
-          "5m": row[2],
-          "30m": row[3],
-          "1h": row[4],
-          "12h": row[5],
-          "24h": row[6],
-          "Last Refresh": row[7],
-          "Current Total": row[8]
-        }));
+  function getRoleClass(role) {
+    const cleanRole = String(role || "").toLowerCase();
+
+    if (cleanRole === "leader") return "leader";
+    if (cleanRole === "officer") return "officer";
+    return "member";
+  }
+
+  window.renderDace = function(payload) {
+    try {
+      if (!payload || payload.ok !== true) {
+        showError("Apps Script responded, but the data was not valid.");
+        return;
+      }
+
+      const data = Array.isArray(payload.data)
+        ? payload.data.filter(player => String(player.Username || "").trim() !== "")
+        : [];
+
+      if (!data.length) {
+        showError("No members came back from the DACE Members sheet.");
+        return;
+      }
 
       data.sort((a, b) => cleanNumber(b["Current Total"]) - cleanNumber(a["Current Total"]));
 
-      const leaderboard = document.getElementById("leaderboard");
-      leaderboard.innerHTML = "";
-
       let clanTotal = 0;
 
-      data.forEach((player, index) => {
+      const rows = data.map((player, index) => {
         clanTotal += cleanNumber(player["Current Total"]);
 
-        const roleClass = String(player.Role).toLowerCase() === "officer" ? "officer" : "member";
+        const role = player.Role || "Member";
+        const roleClass = getRoleClass(role);
 
-        leaderboard.innerHTML += `
+        return `
           <tr>
             <td class="rank">#${index + 1}</td>
-            <td>${player.Username}</td>
-            <td><span class="role ${roleClass}">${player.Role}</span></td>
+            <td>${escapeHTML(player.Username)}</td>
+            <td><span class="role ${roleClass}">${escapeHTML(role)}</span></td>
             <td class="gain5">${formatNumber(player["5m"])}</td>
             <td>${formatNumber(player["30m"])}</td>
             <td>${formatNumber(player["1h"])}</td>
@@ -261,25 +270,39 @@
             <td><strong>${formatNumber(player["Current Total"])}</strong></td>
           </tr>
         `;
-      });
+      }).join("");
 
+      document.getElementById("leaderboard").innerHTML = rows;
       document.getElementById("memberCount").textContent = data.length;
       document.getElementById("clanTotal").textContent = clanTotal.toLocaleString();
       document.getElementById("topPlayer").textContent = data[0]?.Username || "--";
       document.getElementById("lastRefresh").textContent = data[0]?.["Last Refresh"] || "--";
-      document.getElementById("updatedText").textContent = "Data pulled from Google Sheets";
-
+      document.getElementById("updatedText").textContent = "Data pulled from DACE Members sheet";
     } catch (error) {
-      document.getElementById("leaderboard").innerHTML = `
-        <tr>
-          <td colspan="9" class="loading">Could not load sheet data.</td>
-        </tr>
-      `;
       console.error(error);
+      showError("The site got data, but failed while building the table.");
     }
+  };
+
+  function loadData() {
+    const oldScript = document.getElementById("daceDataScript");
+    if (oldScript) oldScript.remove();
+
+    const script = document.createElement("script");
+    script.id = "daceDataScript";
+
+    const joiner = WEB_APP_URL.includes("?") ? "&" : "?";
+    script.src = `${WEB_APP_URL}${joiner}callback=renderDace&cacheBust=${Date.now()}`;
+
+    script.onerror = function() {
+      showError("Could not load data from Apps Script. Check your Web App deployment permissions.");
+    };
+
+    document.body.appendChild(script);
   }
 
   loadData();
+  setInterval(loadData, 60000);
 </script>
 </body>
 </html>
