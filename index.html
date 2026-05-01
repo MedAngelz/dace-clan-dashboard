@@ -1,101 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DACE Clan Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #0d0d0d;
-      color: white;
+      background: #080808;
+      color: #fff;
     }
 
     header {
+      background: linear-gradient(90deg, #111, #1c1c1c);
+      padding: 25px;
       text-align: center;
-      padding: 20px;
-      font-size: 28px;
-      font-weight: bold;
+      border-bottom: 2px solid gold;
+    }
+
+    header h1 {
+      margin: 0;
       color: gold;
+      font-size: 38px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: #aaa;
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 1250px;
       margin: auto;
       padding: 20px;
     }
 
-    .card {
-      background: #1a1a1a;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
     }
 
-    .title {
-      font-size: 18px;
+    .card {
+      background: #151515;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.12);
+    }
+
+    .card-title {
+      color: #aaa;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .card-value {
       color: gold;
-      margin-bottom: 10px;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      background: #111;
+      border-radius: 14px;
+      border: 1px solid #2a2a2a;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-    }
-
-    th, td {
-      padding: 10px;
-      text-align: left;
+      min-width: 900px;
     }
 
     th {
+      background: #1f1f1f;
+      color: gold;
+      padding: 12px;
+      text-align: left;
+      position: sticky;
+      top: 0;
+    }
+
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid #222;
+    }
+
+    tr:hover {
+      background: #1a1a1a;
+    }
+
+    .rank {
+      color: gold;
+      font-weight: bold;
+    }
+
+    .role {
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .officer {
+      background: rgba(255, 215, 0, 0.2);
       color: gold;
     }
 
-    tr:nth-child(even) {
-      background: #141414;
+    .member {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ddd;
+    }
+
+    .gain5 {
+      background: rgba(255, 215, 0, 0.18);
+      color: gold;
+      font-weight: bold;
+    }
+
+    .updated {
+      margin-top: 12px;
+      color: #888;
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .loading {
+      text-align: center;
+      color: gold;
+      font-size: 20px;
+      padding: 40px;
     }
   </style>
 </head>
+
 <body>
+  <header>
+    <h1>DACE Clan Dashboard</h1>
+    <p>DACE ON TOP 🔥</p>
+  </header>
 
-<header>DACE Clan Dashboard</header>
+  <div class="container">
+    <div class="cards">
+      <div class="card">
+        <div class="card-title">Total Members</div>
+        <div class="card-value" id="memberCount">--</div>
+      </div>
 
-<div class="container">
+      <div class="card">
+        <div class="card-title">Clan Total Points</div>
+        <div class="card-value" id="clanTotal">--</div>
+      </div>
 
-  <div class="card">
-    <div class="title">Clan Stats</div>
-    <p>Rank: #32</p>
-    <p>Total Points: 1,234,567</p>
+      <div class="card">
+        <div class="card-title">Top Player</div>
+        <div class="card-value" id="topPlayer">--</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Last Refresh</div>
+        <div class="card-value" id="lastRefresh">--</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>5m</th>
+            <th>30m</th>
+            <th>1h</th>
+            <th>12h</th>
+            <th>24h</th>
+            <th>Current Total</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard">
+          <tr>
+            <td colspan="9" class="loading">Loading DACE data...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="updated" id="updatedText"></div>
   </div>
 
-  <div class="card">
-    <div class="title">Members</div>
-    <table>
-      <tr>
-        <th>Name</th>
-        <th>Total</th>
-        <th>5m</th>
-        <th>30m</th>
-      </tr>
-      <tr>
-        <td>Aaron</td>
-        <td>120,000</td>
-        <td>+500</td>
-        <td>+2,000</td>
-      </tr>
-      <tr>
-        <td>Player2</td>
-        <td>98,000</td>
-        <td>+300</td>
-        <td>+1,200</td>
-      </tr>
-    </table>
-  </div>
+  <script>
+    const sheetId = "1nLVjTQJ7_6mZw1T0Gde459xrEh99swt1PVV-raqsvgY";
+    const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
 
-</div>
+    function cleanNumber(value) {
+      if (!value) return 0;
+      return Number(String(value).replace(/,/g, "")) || 0;
+    }
 
+    function formatNumber(value) {
+      return cleanNumber(value).toLocaleString();
+    }
+
+    function parseCSV(text) {
+      const rows = [];
+      let current = [];
+      let value = "";
+      let insideQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const next = text[i + 1];
+
+        if (char === '"' && next === '"') {
+          value += '"';
+          i++;
+        } else if (char === '"') {
+          insideQuotes = !insideQuotes;
+        } else if (char === "," && !insideQuotes) {
+          current.push(value);
+          value = "";
+        } else if ((char === "\n" || char === "\r") && !insideQuotes) {
+          if (value || current.length) {
+            current.push(value);
+            rows.push(current);
+            current = [];
+            value = "";
+          }
+        } else {
+          value += char;
+        }
+      }
+
+      if (value || current.length) {
+        current.push(value);
+        rows.push(current);
+      }
+
+      return rows;
+    }
+
+    async function loadData() {
+      const response = await fetch(sheetUrl);
+      const csvText = await response.text();
+      const rows = parseCSV(csvText);
+
+      const headers = rows[0];
+      const data = rows.slice(1).map(row => {
+        const obj = {};
+        headers.forEach((header, index) => {
+          obj[header.trim()] = row[index] || "";
+        });
+        return obj;
+      });
+
+      data.sort((a, b) => cleanNumber(b["Current Total"]) - cleanNumber(a["Current Total"]));
+
+      const leaderboard = document.getElementById("leaderboard");
+      leaderboard.innerHTML = "";
+
+      let clanTotal = 0;
+
+      data.forEach((player, index) => {
+        clanTotal += cleanNumber(player["Current Total"]);
+
+        const roleClass = player.Role.toLowerCase() === "officer" ? "officer" : "member";
+
+        leaderboard.innerHTML += `
+          <tr>
+            <td class="rank">#${index + 1}</td>
+            <td>${player.Username}</td>
+            <td><span class="role ${roleClass}">${player.Role}</span></td>
+            <td class="gain5">${formatNumber(player["5m"])}</td>
+            <td>${formatNumber(player["30m"])}</td>
+            <td>${formatNumber(player["1h"])}</td>
+            <td>${formatNumber(player["12h"])}</td>
+            <td>${formatNumber(player["24h"])}</td>
+            <td><strong>${formatNumber(player["Current Total"])}</strong></td>
+          </tr>
+        `;
+      });
+
+      document.getElementById("memberCount").textContent = data.length;
+      document.getElementById("clanTotal").textContent = clanTotal.toLocaleString();
+      document.getElementById("topPlayer").textContent = data[0]?.Username || "--";
+      document.getElementById("lastRefresh").textContent = data[0]?.["Last Refresh"] || "--";
+      document.getElementById("updatedText").textContent = "Data pulled from Google Sheets";
+    }
+
+    loadData();
+  </script>
 </body>
 </html>
