@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DACE Clan Dashboard</title>
+
+  <style>
+    :root {
+      --bg: #050505;
+      --panel: #111111;
+      --panel-2: #171717;
+      --panel-3: #202020;
+      --text: #ffffff;
+      --muted: #a7a7a7;
+      --line: #2b2b2b;
+      --gold: #ffd700;
+      --gold-soft: rgba(255, 215, 0, 0.16);
+      --green: #4ade80;
+      --red: #fb7185;
+      --blue: #60a5fa;
+      --shadow: 0 0 22px rgba(255, 215, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(255, 215, 0, 0.08), transparent 28rem),
+        linear-gradient(180deg, #0b0b0b 0%, #050505 55%, #000000 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      border-bottom: 2px solid var(--gold);
+      background: linear-gradient(90deg, #111111, #1a1a1a, #111111);
+      padding: 26px 16px 22px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .topbar::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, transparent 0%, rgba(255, 215, 0, 0.08) 45%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .clan-tag {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 8px 16px;
+      border: 1px solid rgba(255, 215, 0, 0.35);
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--gold);
+      font-weight: 800;
+      letter-spacing: 3px;
+      margin-bottom: 12px;
+    }
+
+    .topbar h1 {
+      position: relative;
+      margin: 0;
+      color: var(--gold);
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: 1;
+      text-shadow: 0 0 18px rgba(255, 215, 0, 0.25);
+    }
+
+    .topbar p {
+      position: relative;
+      margin: 12px 0 0;
+      color: #d0d0d0;
+      font-size: 15px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 22px 18px 40px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(74, 222, 128, 0.35);
+      background: rgba(74, 222, 128, 0.08);
+      color: var(--green);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel-2), #101010);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      min-height: 105px;
+    }
+
+    .card-title {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .card-value {
+      color: var(--gold);
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 900;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-sub {
+      color: #cfcfcf;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 28px 0 12px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      color: var(--gold);
+      font-size: 22px;
+    }
+
+    .top-gainers {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+      margin-bottom: 22px;
+    }
+
+    .gainer-card {
+      background: linear-gradient(180deg, rgba(255, 215, 0, 0.13), rgba(17, 17, 17, 0.95));
+      border: 1px solid rgba(255, 215, 0, 0.24);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .gainer-label {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .gainer-name {
+      font-size: 22px;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .gainer-value {
+      color: var(--green);
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 190px 190px;
+      gap: 12px;
+      margin: 0 0 14px;
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #101010;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 13px 14px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .input:focus,
+    .select:focus {
+      border-color: rgba(255, 215, 0, 0.65);
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.09);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      background: var(--panel);
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1040px;
+    }
+
+    th {
+      background: var(--panel-3);
+      color: var(--gold);
+      padding: 14px 12px;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-size: 14px;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    th:hover {
+      background: #292929;
+    }
+
+    td {
+      padding: 13px 12px;
+      border-bottom: 1px solid #222;
+      color: #f2f2f2;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.018);
+    }
+
+    tbody tr:hover {
+      background: rgba(255, 215, 0, 0.06);
+    }
+
+    .rank {
+      color: var(--gold);
+      font-weight: 900;
+    }
+
+    .medal {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 46px;
+    }
+
+    .username {
+      font-weight: 800;
+    }
+
+    .role {
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      display: inline-block;
+    }
+
+    .leader {
+      background: rgba(251, 113, 133, 0.18);
+      color: var(--red);
+    }
+
+    .officer {
+      background: rgba(255, 215, 0, 0.18);
+      color: var(--gold);
+    }
+
+    .member {
+      background: rgba(255, 255, 255, 0.10);
+      color: #ddd;
+    }
+
+    .gain5 {
+      background: rgba(255, 215, 0, 0.13);
+      color: var(--gold);
+      font-weight: 900;
+    }
+
+    .positive {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .zero {
+      color: #aaaaaa;
+    }
+
+    .total {
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .loading,
+    .error {
+      text-align: center;
+      font-size: 18px;
+      padding: 38px;
+    }
+
+    .loading {
+      color: var(--gold);
+    }
+
+    .error {
+      color: var(--red);
+    }
+
+    .updated {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .footer-note {
+      margin-top: 22px;
+      color: #777;
+      text-align: center;
+      font-size: 12px;
+    }
+
+
+
+    .neighbor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .neighbor-card {
+      background: linear-gradient(180deg, var(--panel-2), #101010);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .neighbor-card.above {
+      border-color: rgba(251, 113, 133, 0.38);
+    }
+
+    .neighbor-card.below {
+      border-color: rgba(74, 222, 128, 0.38);
+    }
+
+    .neighbor-card.danger-glow {
+      border-color: rgba(251, 113, 133, 0.85);
+      box-shadow: 0 0 22px rgba(251, 113, 133, 0.20);
+    }
+
+    .neighbor-card.warning-glow {
+      border-color: rgba(255, 215, 0, 0.85);
+      box-shadow: 0 0 22px rgba(255, 215, 0, 0.18);
+    }
+
+    .neighbor-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .neighbor-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .neighbor-name {
+      color: #fff;
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1;
+      font-weight: 950;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .neighbor-total-label {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .neighbor-total {
+      color: var(--gold);
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 950;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .neighbor-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .neighbor-mini {
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 13px;
+      min-height: 72px;
+    }
+
+    .neighbor-mini-label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 8px;
+    }
+
+    .neighbor-mini-value {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .neighbor-mini-value.good {
+      color: var(--green);
+    }
+
+    .neighbor-mini-value.bad {
+      color: var(--red);
+    }
+
+    .neighbor-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 980px) {
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .top-gainers {
+        grid-template-columns: 1fr;
+      }
+
+      .neighbor-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .neighbor-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .container {
+        padding: 16px 10px 32px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        min-height: auto;
+      }
+
+      .status-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .topbar {
+        padding: 22px 12px 18px;
+      }
+
+      .topbar h1 {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="clan-tag">🏆 DACE</div>
+    <h1>DACE Clan Dashboard</h1>
+    <p>DACE ON TOP 🔥 Live Clan War Tracker</p>
+  </header>
+
+  <main class="container">
+    <div class="status-row">
+      <div class="live-pill"><span class="dot"></span> Live from Google Sheets</div>
+      <div id="refreshTimer">Next refresh in 60s</div>
+    </div>
+
+    <section class="cards">
+      <div class="card">
+        <div class="card-title">Members</div>
+        <div class="card-value" id="memberCount">--</div>
+        <div class="card-sub">Current clan roster</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Battle Rank</div>
+        <div class="card-value" id="battleRank">--</div>
+        <div class="card-sub" id="battleName">Active clan war</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Clan Total Points</div>
+        <div class="card-value" id="clanTotal">--</div>
+        <div class="card-sub" id="clanTotalSub">Official battle total</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Top Player</div>
+        <div class="card-value" id="topPlayer">--</div>
+        <div class="card-sub" id="topPlayerPoints">-- points</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Last Refresh</div>
+        <div class="card-value" id="lastRefresh">--</div>
+        <div class="card-sub">From DACE Members sheet</div>
+      </div>
+    </section>
+
+    <div class="section-title">
+      <h2>⚠️ Gap To Neighbors</h2>
+    </div>
+
+    <section class="neighbor-grid">
+      <div class="neighbor-card above" id="aboveCard">
+        <div class="neighbor-head">
+          <div>
+            <div class="neighbor-label" id="aboveLabel">Gap to clan above</div>
+            <div class="neighbor-name" id="aboveName">--</div>
+          </div>
+          <div>
+            <div class="neighbor-total-label">Their Total</div>
+            <div class="neighbor-total" id="aboveTotal">--</div>
+          </div>
+        </div>
+
+        <div class="neighbor-stats">
+          <div class="neighbor-mini">
+            <div class="neighbor-mini-label">Points Gap</div>
+            <div class="neighbor-mini-value bad" id="gapToAbove">--</div>
+          </div>
+          <div class="neighbor-mini">
+            <div class="neighbor-mini-label">Their Members</div>
+            <div class="neighbor-mini-value" id="aboveMembers">--</div>
+          </div>
+          <div class="neighbor-mini">
+            <div class="neighbor-mini-label">Status</div>
+            <div class="neighbor-mini-value" id="aboveStatus">Need data</div>
+          </div>
+        </div>
+        <div class="neighbor-note">This shows how much DACE needs to pass the clan above.</div>
+      </div>
+
+      <div class="neighbor-card below" id="belowCard">
+        <div class="neighbor-head">
+          <div>
+            <div class="neighbor-label" id="belowLabel">Lead over clan below</div>
+            <div class="neighbor-name" id="belowName">--</div>
+          </div>
+          <div>
+            <div class="neighbor-total-label">Their Total</div>
+            <div class="neighbor-total" id="belowTotal">--</div>
+          </div>
+        </div>
+
+        <div class="neighbor-stats">
+          <div class="neighbor-mini">
+            <div class="neighbor-mini-label">Your Lead</div>
+            <div class="neighbor-mini-value good" id="leadOverBelow">--</div>
+          </div>
+          <div class="neighbor-mini">
+            <div class="neighbor-mini-label">Their Members</div>
+            <div class="neighbor-mini-value" id="belowMembers">--</div>
+          </div>
+          <div class="neighbor-mini">
+            <div class="neighbor-mini-label">Danger Check</div>
+            <div class="neighbor-mini-value" id="belowStatus">Need data</div>
+          </div>
+        </div>
+        <div class="neighbor-note">This shows how safe DACE is from losing the current rank.</div>
+      </div>
+    </section>
+
+    <div class="section-title">
+      <h2>🔥 Top Gainers</h2>
+    </div>
+
+    <section class="top-gainers">
+      <div class="gainer-card">
+        <div class="gainer-label">Best 5m Gain</div>
+        <div class="gainer-name" id="top5mName">--</div>
+        <div class="gainer-value" id="top5mValue">--</div>
+      </div>
+
+      <div class="gainer-card">
+        <div class="gainer-label">Best 30m Gain</div>
+        <div class="gainer-name" id="top30mName">--</div>
+        <div class="gainer-value" id="top30mValue">--</div>
+      </div>
+
+      <div class="gainer-card">
+        <div class="gainer-label">Best 1h Gain</div>
+        <div class="gainer-name" id="top1hName">--</div>
+        <div class="gainer-value" id="top1hValue">--</div>
+      </div>
+    </section>
+
+    <div class="section-title">
+      <h2>📊 Member Leaderboard</h2>
+    </div>
+
+    <section class="controls">
+      <input class="input" id="searchInput" type="search" placeholder="Search username..." />
+      <select class="select" id="roleFilter">
+        <option value="all">All Roles</option>
+        <option value="leader">Leader</option>
+        <option value="officer">Officers</option>
+        <option value="member">Members</option>
+      </select>
+      <select class="select" id="sortSelect">
+        <option value="Current Total">Sort: Current Total</option>
+        <option value="5m">Sort: 5m Gain</option>
+        <option value="30m">Sort: 30m Gain</option>
+        <option value="1h">Sort: 1h Gain</option>
+        <option value="12h">Sort: 12h Gain</option>
+        <option value="24h">Sort: 24h Gain</option>
+        <option value="Username">Sort: Username</option>
+      </select>
+    </section>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-sort="rank">Rank</th>
+            <th data-sort="Username">Username</th>
+            <th data-sort="Role">Role</th>
+            <th data-sort="5m">5m</th>
+            <th data-sort="30m">30m</th>
+            <th data-sort="1h">1h</th>
+            <th data-sort="12h">12h</th>
+            <th data-sort="24h">24h</th>
+            <th data-sort="Current Total">Current Total</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard">
+          <tr>
+            <td colspan="9" class="loading">Loading DACE data...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="updated" id="updatedText"></div>
+    <div class="footer-note">DACE ON TOP • Auto-refreshes every 60 seconds</div>
+  </main>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyE-JBy5PjxfHzuLYX-YVArdhOwRe-k2DqEIj5qr0Y8RS4kjrWv3IKy2-u48i8YZyso/exec";
+    const REFRESH_SECONDS = 60;
+
+    let allPlayers = [];
+    let countdown = REFRESH_SECONDS;
+    let currentSort = "Current Total";
+    let currentSortDirection = "desc";
+
+    function cleanNumber(value) {
+      if (value === null || value === undefined || value === "") return 0;
+      return Number(String(value).replace(/,/g, "").replace(/\+/g, "").replace(/[^\d.-]/g, "").trim()) || 0;
+    }
+
+    function formatNumber(value) {
+      const number = cleanNumber(value);
+      return number ? number.toLocaleString() : "--";
+    }
+
+    function formatGain(value) {
+      const number = cleanNumber(value);
+      return number > 0 ? `+${number.toLocaleString()}` : "0";
+    }
+
+    function formatRank(value) {
+      const number = cleanNumber(value);
+      return number > 0 ? `#${number.toLocaleString()}` : "--";
+    }
+
+    function formatMembers(members, capacity) {
+      const memberCount = cleanNumber(members);
+      const capCount = cleanNumber(capacity);
+      if (memberCount && capCount) return `${memberCount.toLocaleString()}/${capCount.toLocaleString()}`;
+      if (memberCount) return memberCount.toLocaleString();
+      return "--";
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showError(message) {
+      document.getElementById("leaderboard").innerHTML = `
+        <tr>
+          <td colspan="9" class="error">${escapeHTML(message)}</td>
+        </tr>
+      `;
+    }
+
+    function getRoleClass(role) {
+      const cleanRole = String(role || "").toLowerCase();
+      if (cleanRole === "leader") return "leader";
+      if (cleanRole === "officer") return "officer";
+      return "member";
+    }
+
+    function getRankDisplay(index) {
+      if (index === 0) return "🥇 #1";
+      if (index === 1) return "🥈 #2";
+      if (index === 2) return "🥉 #3";
+      return `#${index + 1}`;
+    }
+
+    function getGainClass(value) {
+      return cleanNumber(value) > 0 ? "positive" : "zero";
+    }
+
+    function setText(id, value) {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value;
+    }
+
+    function valueFromRaw(player, index) {
+      return Array.isArray(player.raw) && player.raw[index] !== undefined ? player.raw[index] : "";
+    }
+
+    function normalizePlayer(player) {
+      // Apps Script currently sends member rows like:
+      // raw[0] username, raw[1] role, raw[2] 5m, raw[3] 30m, raw[4] 1h,
+      // raw[5] 12h, raw[6] 24h, raw[7] last refresh, raw[8] current total.
+      return {
+        Username: player.Username || player.username || player.name || valueFromRaw(player, 0),
+        Role: player.Role || player.role || valueFromRaw(player, 1) || "Member",
+        "5m": player["5m"] ?? player.gain5m ?? valueFromRaw(player, 2),
+        "30m": player["30m"] ?? player.gain30m ?? valueFromRaw(player, 3),
+        "1h": player["1h"] ?? player.gain1h ?? valueFromRaw(player, 4),
+        "12h": player["12h"] ?? player.gain12h ?? valueFromRaw(player, 5),
+        "24h": player["24h"] ?? player.gain24h ?? valueFromRaw(player, 6),
+        "Last Refresh": player["Last Refresh"] || player.lastRefresh || valueFromRaw(player, 7),
+        "Current Total": player["Current Total"] ?? player.currentTotal ?? player.totalPoints ?? player.points ?? valueFromRaw(player, 8)
+      };
+    }
+
+    function getTopBy(field) {
+      if (!allPlayers.length) return null;
+      return [...allPlayers].sort((a, b) => cleanNumber(b[field]) - cleanNumber(a[field]))[0];
+    }
+
+    function updateSummaryCards(payload) {
+      const sortedByTotal = [...allPlayers].sort((a, b) => cleanNumber(b["Current Total"]) - cleanNumber(a["Current Total"]));
+      const memberTotal = allPlayers.reduce((sum, player) => sum + cleanNumber(player["Current Total"]), 0);
+      const officialClanTotal = cleanNumber(payload.clanTotalPoints || payload.totalPoints);
+      const clanTotal = officialClanTotal || memberTotal;
+      const topPlayer = sortedByTotal[0];
+
+      setText("memberCount", cleanNumber(payload.membersCount || payload.memberCount || allPlayers.length).toLocaleString());
+      setText("battleRank", formatRank(payload.battleRank || payload.rank));
+      setText("battleName", "Active clan war");
+      setText("clanTotal", clanTotal ? clanTotal.toLocaleString() : "--");
+      setText("clanTotalSub", officialClanTotal ? "Official battle total" : "Combined member total");
+      setText("topPlayer", topPlayer?.Username || payload.topPlayerName || payload.topPlayer || "--");
+      setText("topPlayerPoints", topPlayer ? `${formatNumber(topPlayer["Current Total"])} points` : "-- points");
+      setText("lastRefresh", payload.lastRefreshFormatted || payload.lastRefresh || topPlayer?.["Last Refresh"] || "--");
+
+      const top5m = getTopBy("5m");
+      const top30m = getTopBy("30m");
+      const top1h = getTopBy("1h");
+
+      setText("top5mName", top5m?.Username || payload.best5mName || "--");
+      setText("top5mValue", top5m ? formatGain(top5m["5m"]) : formatGain(payload.best5mGain));
+
+      setText("top30mName", top30m?.Username || payload.best30mName || "--");
+      setText("top30mValue", top30m ? formatGain(top30m["30m"]) : formatGain(payload.best30mGain));
+
+      setText("top1hName", top1h?.Username || payload.best1hName || "--");
+      setText("top1hValue", top1h ? formatGain(top1h["1h"]) : formatGain(payload.best1hGain));
+    }
+
+    function updateNeighborCards(payload) {
+      const neighbors = payload.neighborData || {};
+      const above = payload.clanAbove || neighbors.clanAbove || null;
+      const below = payload.clanBelow || neighbors.clanBelow || null;
+      const gap = cleanNumber(payload.gapToAbove ?? neighbors.gapToAbove);
+      const lead = cleanNumber(payload.leadOverBelow ?? neighbors.leadOverBelow);
+      const aboveTotal = payload.aboveTotal ?? neighbors.aboveTotal ?? above?.points;
+      const belowTotal = payload.belowTotal ?? neighbors.belowTotal ?? below?.points;
+      const aboveMembers = payload.aboveMembers ?? neighbors.aboveMembers ?? above?.members;
+      const belowMembers = payload.belowMembers ?? neighbors.belowMembers ?? below?.members;
+
+      if (above) {
+        setText("aboveLabel", "Gap to clan above");
+        setText("aboveName", above.name || "--");
+        setText("aboveTotal", formatNumber(aboveTotal));
+        setText("gapToAbove", gap > 0 ? gap.toLocaleString() : "Passed");
+        setText("aboveMembers", formatMembers(aboveMembers));
+        setText("aboveStatus", payload.gapStatus || neighbors.gapStatus || (gap > 0 ? "Chasing" : "Passed"));
+      } else {
+        setText("aboveLabel", "Gap to clan above");
+        setText("aboveName", "--");
+        setText("aboveTotal", "--");
+        setText("gapToAbove", "--");
+        setText("aboveMembers", "--");
+        setText("aboveStatus", "No data");
+      }
+
+      const belowCard = document.getElementById("belowCard");
+      if (belowCard) {
+        belowCard.classList.remove("danger-glow", "warning-glow");
+      }
+
+      if (below) {
+        setText("belowLabel", "Lead over clan below");
+        setText("belowName", below.name || "--");
+        setText("belowTotal", formatNumber(belowTotal));
+        setText("leadOverBelow", lead > 0 ? lead.toLocaleString() : "Behind");
+        setText("belowMembers", formatMembers(belowMembers));
+
+        const dangerStatus = payload.dangerStatus || neighbors.dangerStatus || "Safe";
+        setText("belowStatus", dangerStatus);
+
+        if (lead <= 0 || String(dangerStatus).toLowerCase().includes("danger")) {
+          belowCard?.classList.add("danger-glow");
+        } else if (lead < 5000 || String(dangerStatus).toLowerCase().includes("watch") || String(dangerStatus).toLowerCase().includes("close")) {
+          belowCard?.classList.add("warning-glow");
+        }
+      } else {
+        setText("belowLabel", "Lead over clan below");
+        setText("belowName", "--");
+        setText("belowTotal", "--");
+        setText("leadOverBelow", "--");
+        setText("belowMembers", "--");
+        setText("belowStatus", "No data");
+      }
+    }
+
+    function getFilteredPlayers() {
+      const search = document.getElementById("searchInput").value.trim().toLowerCase();
+      const role = document.getElementById("roleFilter").value;
+
+      return allPlayers.filter(player => {
+        const usernameMatch = String(player.Username || "").toLowerCase().includes(search);
+        const playerRole = String(player.Role || "").toLowerCase();
+        const roleMatch = role === "all" || playerRole === role;
+        return usernameMatch && roleMatch;
+      });
+    }
+
+    function sortPlayers(data) {
+      const sorted = [...data];
+
+      sorted.sort((a, b) => {
+        if (currentSort === "Username" || currentSort === "Role") {
+          const result = String(a[currentSort] || "").localeCompare(String(b[currentSort] || ""));
+          return currentSortDirection === "asc" ? result : -result;
+        }
+
+        const result = cleanNumber(b[currentSort]) - cleanNumber(a[currentSort]);
+        return currentSortDirection === "asc" ? -result : result;
+      });
+
+      return sorted;
+    }
+
+    function renderTable() {
+      const leaderboard = document.getElementById("leaderboard");
+      const filtered = sortPlayers(getFilteredPlayers());
+
+      if (!filtered.length) {
+        leaderboard.innerHTML = `
+          <tr>
+            <td colspan="9" class="loading">No members found.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      const rows = filtered.map((player, index) => {
+        const role = player.Role || "Member";
+        const roleClass = getRoleClass(role);
+
+        return `
+          <tr>
+            <td class="rank"><span class="medal">${getRankDisplay(index)}</span></td>
+            <td class="username">${escapeHTML(player.Username)}</td>
+            <td><span class="role ${roleClass}">${escapeHTML(role)}</span></td>
+            <td class="gain5 ${getGainClass(player["5m"])}">${formatGain(player["5m"])}</td>
+            <td class="${getGainClass(player["30m"])}">${formatGain(player["30m"])}</td>
+            <td class="${getGainClass(player["1h"])}">${formatGain(player["1h"])}</td>
+            <td class="${getGainClass(player["12h"])}">${formatGain(player["12h"])}</td>
+            <td class="${getGainClass(player["24h"])}">${formatGain(player["24h"])}</td>
+            <td class="total">${formatNumber(player["Current Total"])}</td>
+          </tr>
+        `;
+      }).join("");
+
+      leaderboard.innerHTML = rows;
+      document.getElementById("updatedText").textContent =
+        `Showing ${filtered.length.toLocaleString()} of ${allPlayers.length.toLocaleString()} members • Data pulled from DACE Members sheet`;
+    }
+
+    function handlePayload(payload) {
+      try {
+        console.log("DACE payload:", payload);
+
+        if (!payload || payload.ok !== true) {
+          showError("Apps Script responded, but the data was not valid.");
+          return;
+        }
+
+        const sourceMembers = Array.isArray(payload.members)
+          ? payload.members
+          : Array.isArray(payload.rows)
+            ? payload.rows
+            : Array.isArray(payload.roster)
+              ? payload.roster
+              : Array.isArray(payload.data)
+                ? payload.data
+                : [];
+
+        const data = sourceMembers
+          .map(normalizePlayer)
+          .filter(player => String(player.Username || "").trim() !== "");
+
+        if (!data.length) {
+          showError("No members came back from the DACE Members sheet.");
+          return;
+        }
+
+        allPlayers = data;
+        updateSummaryCards(payload);
+        updateNeighborCards(payload);
+        renderTable();
+        countdown = REFRESH_SECONDS;
+      } catch (error) {
+        console.error(error);
+        showError("The site got data, but failed while building the table. Check the browser console for details.");
+      }
+    }
+
+    async function loadData() {
+      try {
+        const joiner = WEB_APP_URL.includes("?") ? "&" : "?";
+        const response = await fetch(`${WEB_APP_URL}${joiner}cacheBust=${Date.now()}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const payload = await response.json();
+        handlePayload(payload);
+      } catch (error) {
+        console.error(error);
+        showError(`Could not load data from Apps Script: ${error.message}`);
+      }
+    }
+
+    function tickCountdown() {
+      countdown -= 1;
+
+      if (countdown <= 0) {
+        countdown = REFRESH_SECONDS;
+        loadData();
+      }
+
+      setText("refreshTimer", `Next refresh in ${countdown}s`);
+    }
+
+    document.getElementById("searchInput").addEventListener("input", renderTable);
+    document.getElementById("roleFilter").addEventListener("change", renderTable);
+    document.getElementById("sortSelect").addEventListener("change", event => {
+      currentSort = event.target.value;
+      currentSortDirection = currentSort === "Username" ? "asc" : "desc";
+      renderTable();
+    });
+
+    document.querySelectorAll("th[data-sort]").forEach(header => {
+      header.addEventListener("click", () => {
+        const sortField = header.getAttribute("data-sort");
+        if (!sortField || sortField === "rank") return;
+
+        if (currentSort === sortField) {
+          currentSortDirection = currentSortDirection === "desc" ? "asc" : "desc";
+        } else {
+          currentSort = sortField;
+          currentSortDirection = sortField === "Username" ? "asc" : "desc";
+        }
+
+        const select = document.getElementById("sortSelect");
+        if ([...select.options].some(option => option.value === currentSort)) {
+          select.value = currentSort;
+        }
+
+        renderTable();
+      });
+    });
+
+    loadData();
+    setInterval(tickCountdown, 1000);
+  </script>
+</body>
+</html>
