@@ -195,69 +195,46 @@
   </div>
 
   <script>
-    const sheetId = "1nLVjTQJ7_6mZw1T0Gde459xrEh99swt1PVV-raqsvgY";
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRp5m92yU4LQs1pP7LeyTkJT4xD930vew6mx7YrQyAU6-CEQO2gOG3AlITrAddThFVsSvE41xRXf5rv/pub?output=csv";
+  const sheetUrl = "https://docs.google.com/spreadsheets/d/1nLVjTQJ7_6mZw1T0Gde459xrEh99swt1PVV-raqsvgY/gviz/tq?tqx=out:csv";
 
-    function cleanNumber(value) {
-      if (!value) return 0;
-      return Number(String(value).replace(/,/g, "")) || 0;
-    }
+  function cleanNumber(value) {
+    if (!value) return 0;
+    return Number(String(value).replace(/,/g, "").trim()) || 0;
+  }
 
-    function formatNumber(value) {
-      return cleanNumber(value).toLocaleString();
-    }
+  function formatNumber(value) {
+    return cleanNumber(value).toLocaleString();
+  }
 
-    function parseCSV(text) {
-      const rows = [];
-      let current = [];
-      let value = "";
-      let insideQuotes = false;
+  function parseCSV(text) {
+    return text
+      .trim()
+      .split("\n")
+      .map(row =>
+        row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+          .map(cell => cell.replace(/^"|"$/g, "").trim())
+      );
+  }
 
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const next = text[i + 1];
-
-        if (char === '"' && next === '"') {
-          value += '"';
-          i++;
-        } else if (char === '"') {
-          insideQuotes = !insideQuotes;
-        } else if (char === "," && !insideQuotes) {
-          current.push(value);
-          value = "";
-        } else if ((char === "\n" || char === "\r") && !insideQuotes) {
-          if (value || current.length) {
-            current.push(value);
-            rows.push(current);
-            current = [];
-            value = "";
-          }
-        } else {
-          value += char;
-        }
-      }
-
-      if (value || current.length) {
-        current.push(value);
-        rows.push(current);
-      }
-
-      return rows;
-    }
-
-    async function loadData() {
+  async function loadData() {
+    try {
       const response = await fetch(sheetUrl);
       const csvText = await response.text();
       const rows = parseCSV(csvText);
 
-      const headers = rows[0];
-      const data = rows.slice(1).map(row => {
-        const obj = {};
-        headers.forEach((header, index) => {
-          obj[header.trim()] = row[index] || "";
-        });
-        return obj;
-      });
+      const data = rows.slice(1)
+        .filter(row => row[0])
+        .map(row => ({
+          Username: row[0],
+          Role: row[1],
+          "5m": row[2],
+          "30m": row[3],
+          "1h": row[4],
+          "12h": row[5],
+          "24h": row[6],
+          "Last Refresh": row[7],
+          "Current Total": row[8]
+        }));
 
       data.sort((a, b) => cleanNumber(b["Current Total"]) - cleanNumber(a["Current Total"]));
 
@@ -269,7 +246,7 @@
       data.forEach((player, index) => {
         clanTotal += cleanNumber(player["Current Total"]);
 
-        const roleClass = player.Role.toLowerCase() === "officer" ? "officer" : "member";
+        const roleClass = String(player.Role).toLowerCase() === "officer" ? "officer" : "member";
 
         leaderboard.innerHTML += `
           <tr>
@@ -291,9 +268,18 @@
       document.getElementById("topPlayer").textContent = data[0]?.Username || "--";
       document.getElementById("lastRefresh").textContent = data[0]?.["Last Refresh"] || "--";
       document.getElementById("updatedText").textContent = "Data pulled from Google Sheets";
-    }
 
-    loadData();
-  </script>
+    } catch (error) {
+      document.getElementById("leaderboard").innerHTML = `
+        <tr>
+          <td colspan="9" class="loading">Could not load sheet data.</td>
+        </tr>
+      `;
+      console.error(error);
+    }
+  }
+
+  loadData();
+</script>
 </body>
 </html>
